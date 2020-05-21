@@ -36,16 +36,16 @@
             </el-card>
             <div class="_bg"></div>
 
-                <el-dialog
-                    title="提示"
-                    :visible.sync="centerDialogVisible"
-                    width="30%"
-                    center>
-                    <span>{{ message }}</span>
-                    <span slot="footer" class="dialog-footer">
-                        <el-button type="primary" @click="centerDialogVisible = false">确 定</el-button>
-                    </span>
-                </el-dialog>
+            <el-dialog
+                title="提示"
+                :visible.sync="centerDialogVisible"
+                width="30%"
+                center>
+                <span>{{ message }}</span>
+                <span slot="footer" class="dialog-footer">
+                    <el-button type="primary" @click="centerDialogVisible = false">确 定</el-button>
+                </span>
+            </el-dialog>
         </div>
 </template>
 <script>
@@ -72,6 +72,8 @@ export default {
             window.location.href="https://github.com/login/oauth/authorize?client_id=46a91cd8e9d8a254d9f5&redirect_uri=http://passport.codelife.com:9000/passport/callback&scope=user&state=1";
         },
         submitForm(userFrom) {
+            let url = this.$route.query.url;
+            console.log(url);
             const _this = this;
             if(_this.checked == true){
                 localStorage.setItem("username", _this.userFrom.username);
@@ -91,7 +93,6 @@ export default {
                 }else{
                     localStorage.setItem("token",resp.data.data.token);
                     axios.post("http://localhost:9000/passport/profile",{},{headers: {'Authorization': 'Bearer ' + resp.data.data.token}}).then(function(resp){
-                        console.log(resp);
                         if(resp.data.code == 200){
                             localStorage.setItem("avatar",resp.data.data.avatar);
                             localStorage.setItem("id",resp.data.data.id);
@@ -105,13 +106,29 @@ export default {
                         duration : 1000,
                     });
                 　　setTimeout(function(){
-                        _this.$router.push("/index");
+                        if(url){
+                            _this.$router.push("/" + url);
+                            return;
+                        }else{
+                            _this.$router.push("/index");
+                        }
                 　　},1000);
                 }
             });
         },
     },
     created(){
+        let url = this.$route.query.url;
+        let errorCode = this.$route.query.errorCode;
+        if(errorCode == 500){
+            _this.$notify({
+                title:"登陆超时",
+                type: 'error',
+                offset: 100,
+                duration : 1000,
+            });
+        }
+        console.log(url);
         this.userFrom.username = localStorage.getItem("username");
         this.userFrom.password = localStorage.getItem("password");
     }

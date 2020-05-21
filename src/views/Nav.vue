@@ -1,7 +1,7 @@
 <template>
 	<div class="body">
 		<el-container>
-			<el-row :gutter="10">
+			<el-row >
 				<el-header style="background-color:#499ef3; height:60px">
 					<router-link to="/index">
 						<el-col :xs="{span:2}" :sm="{span:2,offset:3}" style="height: 60px;">
@@ -10,13 +10,6 @@
 					</router-link>
 
 					<el-col :span="4" class="hidden-md-and-down">
-						<!-- <el-input
-							placeholder="请输入内容"
-							suffix-icon="el-icon-search"
-							v-model="keyword"
-							@click="search"
-							>
-						</el-input> -->
 						<el-autocomplete
 							class="input"
 							v-model="keyword"
@@ -32,7 +25,6 @@
 
 					<el-col :span="4" class="hidden-md-and-down">
 						<el-menu
-						:default-active="activeIndex"
 						class="el-menu-demo"
 						mode="horizontal"
 						@select="handleSelect"
@@ -42,7 +34,6 @@
 						router
 						>
 						<el-menu-item index="/index">首页</el-menu-item>
-						<el-menu-item index="2">消息中心</el-menu-item>
 						</el-menu>
 					</el-col>
 
@@ -57,10 +48,10 @@
 									<span style="cursor: pointer;margin-left: 12px; color:#fff; font-size:16px;">{{member.nickname}}</span>
 								</span>
 								<el-dropdown-menu slot="dropdown">
-									<router-link to='/publish'>
+									<router-link style=" text-decoration: none;" :to="{path:'/member/'+ member.id}">
 										<el-dropdown-item icon="el-icon-user">个人主页</el-dropdown-item>
 									</router-link>
-									<router-link to='/publish'>
+									<router-link style=" text-decoration: none;" to='/publish'>
 										<el-dropdown-item icon="el-icon-plus">发布问题</el-dropdown-item>
 									</router-link>
 									<span  @click="logout()">
@@ -93,7 +84,7 @@
 			<el-row>
 			<router-view/>
 			</el-row>
-    		<el-footer>Copyright © 2020· CC BY-NC-SA 3.0 · Elastic中文社区 · 服务器赞助: 阿里云 · 网站程序: WeCenter · 湘ICP备17007482号</el-footer>
+    		<el-footer>Copyright © 2020· CC BY-NC-SA 3.0 · CodeLife中文社区 · 服务器赞助: XXX · 网站程序: WeCenter · 湘ICP备XXXXXXX号</el-footer>
 		</el-container>
   </div>
 </template>
@@ -108,7 +99,6 @@ export default {
 		return {
 			keyword:'',
 			contents:[],
-			activeIndex: '1',
 			member:{
 				id:'',
 				nickname:'',
@@ -149,8 +139,8 @@ export default {
 				this.$router.push('search');
 				return;
 			}
-			this.$router.push({name: 'searchList', query: {keyword: this.keyword}});
-        // window.location.href="http://localhost:8080/#/searchList?keyword=" + this.keyword;
+			this.$router.push({name: 'index', query: {keyword: this.keyword}});
+			this.reload();
       	},
 		handleSelect(key, keyPath) {
 			console.log(key, keyPath);

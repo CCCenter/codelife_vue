@@ -5,19 +5,23 @@
         <el-col :xs="{span:24}" :sm="{span:24}" :md="{span:18,offset:3}" :lg="{span:18,offset:3}" class="main">
           <el-row :gutter="20">
             <el-col :lg="18" :md="24" :xm="24" :xs="24">
-
+              <el-page-header v-if="topic" @back="goBack" :content="topic" style="padding-left:5px;height:50px;line-height : 50px; background-color: #fff;"></el-page-header>
               <el-card shadow="hover" style="margin-bottom:25px" v-for="question in questions" :key='question.id'>
                 <div class="content">
-                  <router-link :to="'question/' + question.id"><h3>{{ question.title }}</h3></router-link>
+                  <router-link :to="'question/' + question.id"><h3 v-html="question.title"></h3></router-link>
                   <div class="desc" style="text-overflow: ellipsis;overflow:hidden;white-space: nowrap;">{{question.description}}</div>
                   <div class="user-bar">
                     <el-avatar shape="square" style="vertical-align:middle;" :size="14" :src="question.memberAvatar"></el-avatar>
-                    <a href=""><span class="author-info">{{question.memberNickName}}</span></a>
+
+                    <router-link style=" text-decoration: none;" :to="{path:'/member/'+ question.memberId}">
+										  <span class="author-info">{{ question.memberNickName}}</span>
+									  </router-link>
+
                     <span class="author-info"> | {{question.gmtCreate  | formatData()}}</span>
                     <span style="float:right">
-                      <a href=""><i class="el-icon-thumb icon"><span class="num">{{question.likeCount}}</span></i></a>
-                      <a href=""><i class="el-icon-view icon"><span class="num">{{question.viewCount}}</span></i></a>
-                      <a href=""><i class="el-icon-chat-line-round icon"><span class="num">{{question.commentCount}}</span></i></a>
+                      <a @click="like(question.id)"><i class="el-icon-thumb icon"><span class="num">{{question.likeCount}}</span></i></a>
+                      <a><i class="el-icon-view icon"><span class="num">{{question.viewCount}}</span></i></a>
+                      <a><i class="el-icon-chat-line-round icon"><span class="num">{{question.commentCount}}</span></i></a>
                     </span>
                   </div>
                 </div>
@@ -29,7 +33,6 @@
                 :total='total'
                 @current-change="page">
                 </el-pagination>
-
             </el-col>
 
             <el-col :span="6" class="hidden-md-and-down">
@@ -43,13 +46,14 @@
               </div>
                 <el-card shadow="hover">
                   最热问题
-
-                  <el-card shadow="hover" body-style="padding:5px" style="margin:5px 0" v-for="question in questions" :key='question.id'>
+                  <el-card shadow="hover" body-style="padding:5px" style="margin:5px 0" v-for="question in hotQuestion" :key='question.id'>
                     <div class="hot">
                       <router-link :to="'question/' + question.id"><h3>{{ question.title }}</h3></router-link>
                       <div class="user-bar">
                         <el-avatar shape="square" style="vertical-align:middle;" :size="14" :src="question.memberAvatar"></el-avatar>
-                        <a href=""><span class="author-info">{{question.memberNickName}}</span></a>
+                        <router-link style=" text-decoration: none;" :to="{path:'/member/'+ question.memberId}">
+                          <span class="author-info">{{ question.memberNickName}}</span>
+                        </router-link>
                       </div>
                     </div>
                 </el-card>
@@ -64,13 +68,15 @@
 import 'element-ui/lib/theme-chalk/display.css';
 
 export default {
+  inject: ["reload"],
   data(){
     return {
+      topic:'',
       total:1,
       pageSize:2,
-      questions : [
-
-      ],
+      pageUrl:'',
+      questions : [],
+      hotQuestion:[],
         urls: [
         'https://fuss10.elemecdn.com/a/3f/3302e58f9a181d2509f3dc0fa68b0jpeg.jpeg',
         'https://fuss10.elemecdn.com/1/34/19aa98b1fcb2781c4fba33d850549jpeg.jpeg',
@@ -85,25 +91,65 @@ export default {
   methods:{
         page(currenPage){
         const _this = this;
-        axios.get("http://localhost:8001/question/list/"+ (currenPage)+"/6").then(function(resp){
-          // console.log(resp);
-          // console.log(currenPage);
+        axios.get(_this.pageUrl + currenPage +"/6").then(function(resp){
           _this.questions = resp.data.data.records;
           _this.pageSize = resp.data.data.size;
           _this.total = resp.data.data.total;
         })
       },
+      goBack() {
+        this.$router.go(-1);
+      },
+      like(id){
+        axios.post("http://localhost:8001/question/incLikeCount/"+id,{},{headers: {'Authorization': 'Bearer ' + localStorage.getItem("token")}}).then(function(resp){
+          if(resp.data.code == 700){
+          _this.$confirm('登录信息过期是否登录?', '提示', {
+              confirmButtonText: '确定',
+              cancelButtonText: '取消',
+              type: 'warning'
+              }).then(() => {
+                  _this.$router.push( {name :"login" ,query: { url : "question/" + id}});
+              }).catch(() => {
+              _this.$message({
+                  type: 'info',
+                  message: '取消登录'
+              });
+          });
+        }
+        });
+        this.reload();
+      }
   },
   created(){
     const _this = this;
-    axios.get("http://localhost:8001/question/list/0/6").then(function(resp){
-      if(resp.data.code == 700){
-             _this.$router.push({path:'/login'});
-      }else{
+    var keyword = this.$route.query.keyword;
+    var tag = this.$route.query.tag;
+    this.topic = tag;
+    if(keyword){
+      _this.pageUrl='http://localhost:8004/search/list/' + keyword + '/';
+      axios.get("http://localhost:8004/search/list/" + keyword + "/1/6").then(function(resp){
+        console.log(resp.data.data);
         _this.questions = resp.data.data.records;
         _this.pageSize = resp.data.data.size;
         _this.total = resp.data.data.total;
-      }
+      });
+    }else if (tag){
+      _this.pageUrl='http://localhost:8001/question/list/' + tag + "/";
+      axios.get("http://localhost:8001/question/list/" + tag + "/1/5").then(function(resp){
+        _this.questions = resp.data.data.records;
+        _this.pageSize = resp.data.data.size;
+        _this.total = resp.data.data.total;
+      });
+    }else{
+      _this.pageUrl='http://localhost:8001/question/list/';
+      axios.get("http://localhost:8001/question/list/1/6").then(function(resp){
+          _this.questions = resp.data.data.records;
+          _this.pageSize = resp.data.data.size;
+          _this.total = resp.data.data.total;
+      });
+    }
+    axios.get("http://localhost:8001/question/hotList").then(function(resp){
+        _this.hotQuestion = resp.data.data;
     });
   },
 }
@@ -199,6 +245,7 @@ export default {
   }
    .hot h3{
     margin:0;
-    font-size: 16px;
+    font-size: 14px;
+    font-weight: 400;
   }
 </style>

@@ -9,14 +9,19 @@ import Register from'../views/Register.vue'
 import Search from'../views/Search.vue'
 import Loading from '../views/Loading.vue'
 import NotFound from '../views/404.vue'
-import SearchList from '../views/searchList.vue'
 import Member from '../views/Member.vue'
 
 import Manager from '../views_manager/Manager.vue'
-import ManagerLogin from '../views_manager/ManagerLogin.vue'
+import Index_manager from '../views_manager/Index_manager.vue'
+import Login_manager from '../views_manager/Login_manager.vue'
 import Member_manager from '../views_manager/Member_manager.vue'
 import Question_manager from '../views_manager/Question_manager.vue'
 import Comment_manager from '../views_manager/Comment_manager.vue'
+import NotFound_manager from '../views_manager/NotFound_manager.vue'
+import TagType_manager from '../views_manager/TagType_manager.vue'
+import Tag_manager from '../views_manager/Tag_manager.vue'
+import Sensitive_manager from '../views_manager/Sensitive_manager.vue'
+
 Vue.use(VueRouter)
 
 const routes = [
@@ -28,7 +33,7 @@ const routes = [
     children : [
       {
         path : '/index',
-        name : '首页',
+        name : 'index',
         component : Index
       },
       {
@@ -47,21 +52,16 @@ const routes = [
         component : Member
       },
       {
-        path : '/searchList',
-        name : 'searchList',
-        component : SearchList
-      },
-      {
         path: "/404",
-        name: "notFound",
+        name: "NotFound",
         component: NotFound
       },
     ]
   },
   {
-    path: '/managerLogin',
-    name: 'managerLogin',
-    component: ManagerLogin,
+    path: '/Login_manager',
+    name: 'login_manager',
+    component: Login_manager,
   },
   {
     path: '/manager',
@@ -83,11 +83,40 @@ const routes = [
         name: 'comment_manager',
         component: Comment_manager,
       },
+      {
+        path: '/index_manager',
+        name: 'index_manager',
+        component: Index_manager,
+      },
+      {
+        path: '/tagType_manager',
+        name: 'tagType_manager',
+        component: TagType_manager,
+      },
+      {
+        path: '/tag_manager/:id',
+        name: 'tag_manager',
+        component: Tag_manager,
+      },
+      {
+        path: '/sensitive_manager',
+        name: 'sensitive_manager',
+        component: Sensitive_manager,
+      },
+      {
+        path: '/notFound_manager',
+        name: 'notFound_manager',
+        component: NotFound_manager,
+      },
+      {
+        path: "*", // 此处需特别注意置于最底部
+        redirect: "/NotFount_manager"
+      }
     ]
   },
   {
     path : '/login',
-    name : '登陆',
+    name : 'login',
     component : Login
   },
   {
@@ -114,5 +143,6 @@ const routes = [
 const router = new VueRouter({
   routes
 })
+
 
 export default router

@@ -5,16 +5,18 @@
             <el-col :xs="{span:24}" :sm="{span:24}" :md="{span:24}" :lg="{span:18}">
                 <h1 class="title">{{question.title}}</h1>
                 <div class="question-info">
-                  <a href=""><span class="author-info">{{ question.memberNickName}}</span></a>
+                  <router-link style=" text-decoration: none;" :to="{path:'/member/'+ question.memberId}">
+										<span class="author-info">{{ question.memberNickName}}</span>
+									</router-link>
                   <span class="author-info"> | 浏览数：{{ question.viewCount}}</span>
-                  <el-link style="float: right;font-size: 12px;" v-if="question.memberId === this.member.id" icon="el-icon-edit">编辑</el-link>
+                  <el-link  @click="goEdit()" style="float: right;font-size: 12px;" v-if="question.memberId === this.member.id" icon="el-icon-edit">编辑</el-link>
                 </div>
 
                 <el-divider class="hr"></el-divider>
                 <!-- markdown 编辑器 -->
                 <mavon-editor
                   class="md"
-                  :value="question.content"
+                  :value="question.htmlContent"
                   :subfield="false"
                   :defaultOpen="'preview'"
                   :toolbarsFlag="false"
@@ -28,7 +30,7 @@
                 <el-card class="box-card">
                   <div slot="header" class="clearfix">
                     <span>评论</span>
-                    <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>
+                    <!-- <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button> -->
                   </div>
                   <!-- 发起评论 -->
                   <div>
@@ -64,12 +66,12 @@
                       <el-button style="float: right; padding: 3px 0" type="text" @click="comm2(comment.id,comment.commentator,comment.commentatorNickName)">回复</el-button>
                        </div>
                     <div class="content">{{comment.content}}</div>
-                    <el-collapse accordion v-if="comment.commentCount != 0">
-                        <el-collapse-item >
+                    <el-collapse accordion v-if="comment.commentCount != 0"  @change="loadComment(comment.id)">
+                        <el-collapse-item>
                           <template slot="title">
                             <el-button
                               style="float: right; padding: 3px 0"
-                              type="text" @click="loadComment(comment.id)">展开回复{{comment.commentCount}}
+                              type="text">展开回复{{comment.commentCount}}
                             </el-button>
                           </template>
                       <!-- 二级评论 -->
@@ -113,23 +115,35 @@
                     <el-col :span="7" ><el-avatar shape="square" :size="50" :src="question.memberAvatar"></el-avatar></el-col>
                     <el-col :span="17">
                       <span>{{question.memberNickName}}</span>
-                      <div>签名</div>
                     </el-col>
                   </el-row>
                   <el-divider></el-divider>
                   <!-- tag 标签 -->
                   <div>
                     <el-tag
-                    class="tag-list"
-                    :key="tag.name"
-                    size="mini"
-                    v-for="tag in question.tags"
-                    :disable-transitions="false"
-                    @click="addTag(tag)">
-                    {{tag}}
+                      class="tag-list"
+                      :key="tag.name"
+                      size="mini"
+                      v-for="tag in tags"
+                      :disable-transitions="false"
+                    >
+                    <router-link style="text-decoration:none;color:#499ef3;" :to="{name:'index',query:{tag:tag}}" >{{tag}}</router-link>
                     </el-tag>
                   </div>
                   <el-divider></el-divider>
+                  <!-- 相关问题 -->
+                  <div>
+                      问题推荐
+                      <el-card shadow="hover" body-style="padding:5px" style="margin:5px 0" v-for="question in relationQuestions" :key='question.id'>
+                        <div class="hot">
+                          <a style="cursor: pointer;" @click="getQuestion(question.id)"><h3>{{ question.title }}</h3></a>
+                          <div class="user-bar">
+                            <el-avatar shape="square" style="vertical-align:middle;" :size="14" :src="question.memberAvatar"></el-avatar>
+                            <a href=""><span class="author-info">{{question.memberNickName}}</span></a>
+                          </div>
+                        </div>
+                    </el-card>
+                  </div>
                 </el-card>
               </div>
             </el-col>
@@ -144,6 +158,7 @@ import { mavonEditor } from 'mavon-editor'
 import 'mavon-editor/dist/css/index.css'
 
 export default {
+  inject:['reload'],
   components: {
     mavonEditor,
   },
@@ -157,40 +172,50 @@ export default {
           id:'',
           avatar: "",
         },
+        tags:[],
         question:{},
+        relationQuestions:[],
         editComment:{
           // 0 评论问题 1 回复评论
           type:'0',
           parentId:'',
+          questionId:'',
           commentator:'',
           commentator2:'',
           content: '',
         },
         // 编辑内容
-        comments:[
-        ],
+        comments:[],
     };
   }
   ,methods:{
     test(){
-      alert(1);
+      alert(1)
+    },
+    getQuestion(id){
+       this.$router.push("/question/" + id);
+       this.reload();
+    },
+    goEdit(){
+      let id = this.$route.params.id;
+       this.$router.push({path:"/publish",query:{id:id}});
     },
     comment(){
       const _this = this;
+      let id = _this.$route.params.id;
+      this.editComment.questionId = id;
       if(this.editComment.content == "" || this.editComment.content == null){
         this.centerDialogVisible = true;
         return;
       }
-      // console.log(this.editComment);
       axios.post("http://localhost:8002/comment/create/",_this.editComment,{headers: {'Authorization': 'Bearer ' + localStorage.getItem("token")}}).then(function(resp){
-        console.log(resp);
-        if(resp.data.code == 700){
+       if(resp.data.code == 700){
           _this.$confirm('登录信息过期是否登录?', '提示', {
               confirmButtonText: '确定',
               cancelButtonText: '取消',
               type: 'warning'
               }).then(() => {
-                  _this.$router.push("/login");
+                  _this.$router.push( {name :"login" ,query: { url : "question/" + id}});
               }).catch(() => {
               _this.$message({
                   type: 'info',
@@ -239,9 +264,8 @@ export default {
       const _this = this;
       let id = _this.$route.params.id;
       axios.get("http://localhost:8002/comment/listByQuestion/"+id +"/"+ currentPage+"/5").then(function(resp){
-      _this.comments=resp.data.data;
-      // console.log(_this.comments);
-    });
+        _this.comments=resp.data.data;
+      });
     }
   },
   created(){
@@ -250,14 +274,31 @@ export default {
     this.member.avatar=localStorage.getItem("avatar");
     let id = _this.$route.params.id;
     axios.get("http://localhost:8001/question/get/"+id).then(function(resp){
-      _this.question = resp.data.data;
-      _this.editComment.commentator2=_this.question.memberId;
+      if(resp.data.data){
+        _this.question = resp.data.data;
+        _this.editComment.commentator2=_this.question.memberId;
+        _this.tags = _this.question.tags.split(",");
+      }else{
+        _this.$router.push({ name: 'NotFound'})
+      }
     });
     axios.get("http://localhost:8002/comment/listByQuestion/"+id +"/1/5").then(function(resp){
       _this.comments=resp.data.data;
     });
     this.editComment.parentId=this.$route.params.id;
     this.editComment.commentator=this.member.id;
+    var question = this.question;
+
+    setTimeout(function(){
+        axios.get("http://localhost:8001/question/list/" + _this.question.tags[0] + "/1/5").then(function(resp){
+          for (let index = 0; index < resp.data.data.records.length; index++) {
+            const element = resp.data.data.records[index];
+            if(element.id != _this.question.id){
+              _this.relationQuestions.push(element);
+            }
+          }
+        });
+    },500);
   },
 }
 </script>
@@ -287,7 +328,7 @@ export default {
       color : #999;
     }
     .tag-list{
-      margin-right: 5px;
+      margin: 5px;
       cursor: pointer;
     }
     .question-info a{
@@ -320,4 +361,22 @@ export default {
         border-left: 3px solid rgb(73, 158, 243);
         padding: 5px;
       }
+        .user-bar{
+    font-size: 14px;
+    color: #8a8a8a;
+  }
+  .hot a{
+    padding: 0;
+    text-decoration:none;
+    color:black;
+  }
+  
+ .hot a:hover{
+    color:#499ef3;
+  }
+   .hot h3{
+    margin:0;
+    font-size: 14px;
+    font-weight: 400;
+  }
 </style>

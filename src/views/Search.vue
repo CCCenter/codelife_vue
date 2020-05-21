@@ -59,7 +59,7 @@ export default {
         console.log(item);
       },
       search(){
-        this.$router.push({name: 'searchList', query: {keyword: this.keyword}});
+        this.$router.push({name: 'index', query: {keyword: this.keyword}});
       },
       input(){
         this.restaurants = this.list;

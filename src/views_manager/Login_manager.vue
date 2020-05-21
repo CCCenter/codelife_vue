@@ -51,10 +51,6 @@ export default {
     methods: {
         submitForm(userFrom) {
             const _this = this;
-            if(_this.checked == true){
-                localStorage.setItem("username", _this.userFrom.username);
-                localStorage.setItem("password", _this.userFrom.password);
-            }
             _this.message='';
             if(userFrom.username == '' || userFrom.password == ''){
                 _this.message = "用户名或密码不能为空";
@@ -67,24 +63,31 @@ export default {
                     _this.centerDialogVisible = true;
                     return;
                 }else{
-                    localStorage.setItem("token",resp.data.data.token);
+                    localStorage.setItem("managerToken",resp.data.data.token);
                     axios.post("http://localhost:9000/passport/profile",{},{headers: {'Authorization': 'Bearer ' + resp.data.data.token}}).then(function(resp){
                         console.log(resp);
                         if(resp.data.code == 200){
-                            localStorage.setItem("avatar",resp.data.data.avatar);
-                            localStorage.setItem("id",resp.data.data.id);
-                            localStorage.setItem("nickName",resp.data.data.nickName);
+                            if(resp.data.data.role == 1){
+                                localStorage.setItem("managerAvatar",resp.data.data.avatar);
+                                localStorage.setItem("managerId",resp.data.data.id);
+                                localStorage.setItem("managerNickName",resp.data.data.nickName);
+                                _this.$router.push('/index_manager');
+                                _this.$notify({
+                                    title:"登录成功",
+                                    type: 'success',
+                                    offset: 100,
+                                    duration : 1000,
+                                });
+                            }else{
+                                _this.$notify({
+                                    title:"权限不足",
+                                    type: 'error',
+                                    offset: 100,
+                                    duration : 1000,
+                                });
+                            }
                         }
                     });
-                    _this.$notify({
-                        title:"登陆成功",
-                        type: 'success',
-                        offset: 100,
-                        duration : 1000,
-                    });
-                　　setTimeout(function(){
-                        _this.$router.push("/index");
-                　　},1000);
                 }
             });
         },

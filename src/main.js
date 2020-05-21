@@ -58,6 +58,17 @@ Vue.filter('formatData', function (value) {
   }
 })
 
+Vue.filter('memberDate', function (value) {
+
+  const time = Date.now() - new Date(value)
+  for (let i = 0; i < fdate.length; i++) {
+    const t = time / fdate[i].time
+    if (t >= 1) {
+      return Math.floor(t) + fdate[i].text;
+    }
+  }
+})
+
 Vue.filter('dataFormat', function (value, fmt) {
   let getDate = new Date(value);
   let o = {
