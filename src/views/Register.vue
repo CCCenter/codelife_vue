@@ -8,23 +8,38 @@
                     <el-container>
                     <el-main>
                         <div class="login-left">
-                            <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
-                                    <el-form-item label-width="0" prop="pass">
-                                        <el-input type="text"  placeholder="输入用户名" v-model="ruleForm.username" autocomplete="off"></el-input>
+                            <el-form :model="userForm" status-icon ref="userForm" label-width="100px" class="demo-ruleForm">
+                                    <el-form-item label-width="0" prop="username"
+                                    :rules="[
+                                        { required: true, message: '用户名不能为空'},
+                                    ]">
+                                        <el-input type="text"  placeholder="输入用户名" v-model="userForm.username" autocomplete="off"></el-input>
                                     </el-form-item>
-                                    <el-form-item label-width="0" prop="pass">
-                                        <el-input type="password"  placeholder="输入密码" v-model="ruleForm.password" autocomplete="off"></el-input>
+                                    <el-form-item label-width="0" prop="password"  :rules="[
+                                        { required: true, message: '密码不能为空'},
+                                    ]">
+                                        <el-input type="password"  placeholder="输入密码" v-model="userForm.password" autocomplete="off"></el-input>
                                     </el-form-item>
-                                    <el-form-item label-width="0" prop="phone">
-                                        <el-input placeholder="输入手机号" v-model="ruleForm.phone" autocomplete="off"></el-input>
+                                    <el-form-item label-width="0" prop="phone"
+                                    :rules="[
+                                        { required: true, message: '手机号不能为空'},
+                                        { type: 'number', message: '手机号必须为数字值'}
+                                    ]">
+                                        <el-input placeholder="输入手机号" v-model.number="userForm.phone" autocomplete="off"></el-input>
                                     </el-form-item>
                                     <div>
-                                        <el-input placeholder="请输入验证码" v-model="ruleForm.checkCode" prop="checkCode" class="input-with-select">
-                                            <el-button slot="append">短信验证</el-button>
+                                    <el-form-item label-width="0" prop="phoneCode"
+                                     :rules="[
+                                        { required: true, message: '验证码不能为空'},
+                                    ]">
+                                        <el-input placeholder="请输入验证码" validate-event v-model="userForm.phoneCode" prop="checkCode" class="input-with-select">
+                                            <el-button slot="append" :disabled="isDisable" @click="sendCode" >{{buttonName}}</el-button>
                                         </el-input>
+                                    </el-form-item>
+                                    
                                     </div>
                                     <el-checkbox style="margin: 10px; 0" v-model="checked">阅读并同意以下服务条款和协议</el-checkbox>
-                                    <el-button style="width: 300px;" :disabled="!checked" type="primary" @click="submitForm('ruleForm')">注册</el-button>
+                                    <el-button style="width: 300px;" :disabled="!checked" type="primary" @click="submitForm('userForm')">注册</el-button>
                             </el-form>
                         </div>
                     </el-main>
@@ -50,32 +65,66 @@
 <script>
 export default {
     data() {
-        var validatePhone = (rule, value, callback) => {
-            if (value === '') {
-                callback(new Error('请输入手机号'));
-            } else {
-                callback();
-            }
-        };
-
       return {
+        isDisable:false,
         checked: false,
-        ruleForm: {
+        buttonName:'短信验证',
+        userForm: {
             username:'',
             password:'',
             phone: '',
-            checkCode:'',
+            phoneCode:'',
         },
-        rules: {
-            phone: [
-                { validator: validatePhone, trigger: 'blur' }
-            ],
-        }
       };
     },
     methods: {
-      submitForm(formName) {
-          
+        sendCode(){
+            const _this = this;
+            alert(_this.userForm.phone)
+            if(_this.userForm.phone){
+                axios.post('http://localhost:8003/member/phoneCheck',_this.userForm).then(function(resp){
+                    console.log(resp);
+                    if(resp.data.code == 200){
+                        _this.dataisDisable=true;
+                        _this.buttonName = 60;
+                        var id = setInterval(function(){ _this.buttonName = _this.buttonName - 1;
+                        console.log(_this.buttonName);
+                        if(_this.buttonName <= 0){
+                            clearInterval(id);
+                            _this.dataisDisable=false;
+                            _this.buttonName='短信验证';
+                        }
+                        }, 1000);
+                    }else{
+                        _this.$notify.error({
+                            title: '错误',
+                                message: resp.data.message,
+                            });
+                    }
+                });
+            }
+        },
+        submitForm(formName) {
+          const _this = this;
+            this.$refs[formName].validate((valid) => {
+                if (valid) {
+                    axios.post('http://localhost:8003/member/create',_this.userForm).then(function(resp){
+                        console.log(resp);
+                        if(resp.data.code == 200){
+                            _this.$notify.success({
+                                title: '成功',
+                                message: "注册成功",
+                            });
+                        }else{
+                            _this.$notify.warning({
+                                title: '警告',
+                                message: resp.data.message,
+                            });
+                        }
+                        
+                    });
+                }
+            })
       },
     }
   }

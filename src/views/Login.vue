@@ -73,7 +73,6 @@ export default {
         },
         submitForm(userFrom) {
             let url = this.$route.query.url;
-            console.log(url);
             const _this = this;
             if(_this.checked == true){
                 localStorage.setItem("username", _this.userFrom.username);
@@ -93,26 +92,35 @@ export default {
                 }else{
                     localStorage.setItem("token",resp.data.data.token);
                     axios.post("http://localhost:9000/passport/profile",{},{headers: {'Authorization': 'Bearer ' + resp.data.data.token}}).then(function(resp){
-                        if(resp.data.code == 200){
+                         console.log(resp);
+                         if(resp.data.data.role == 2){
+                            _this.$notify({
+                                title:"用户被禁用",
+                                type: 'error',
+                                offset: 100,
+                                duration : 1000,
+                            });
+                            return;
+                         }else if(resp.data.code == 200){
                             localStorage.setItem("avatar",resp.data.data.avatar);
                             localStorage.setItem("id",resp.data.data.id);
                             localStorage.setItem("nickName",resp.data.data.nickName);
-                        }
+                             _this.$notify({
+                                title:"登陆成功",
+                                type: 'success',
+                                offset: 100,
+                                duration : 1000,
+                            });
+                            　setTimeout(function(){
+                                    if(url){
+                                        _this.$router.push("/" + url);
+                                        return;
+                                    }else{
+                                        _this.$router.push("/index");
+                                    }
+                            　　    },1000);
+                            }
                     });
-                    _this.$notify({
-                        title:"登陆成功",
-                        type: 'success',
-                        offset: 100,
-                        duration : 1000,
-                    });
-                　　setTimeout(function(){
-                        if(url){
-                            _this.$router.push("/" + url);
-                            return;
-                        }else{
-                            _this.$router.push("/index");
-                        }
-                　　},1000);
                 }
             });
         },

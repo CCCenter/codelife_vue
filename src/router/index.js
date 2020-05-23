@@ -10,6 +10,7 @@ import Search from'../views/Search.vue'
 import Loading from '../views/Loading.vue'
 import NotFound from '../views/404.vue'
 import Member from '../views/Member.vue'
+import Follow from '../views/Follow.vue'
 
 import Manager from '../views_manager/Manager.vue'
 import Index_manager from '../views_manager/Index_manager.vue'
@@ -50,6 +51,11 @@ const routes = [
         path : '/member/:id',
         name : 'memberInfo',
         component : Member
+      },
+      {
+        path : '/follow',
+        name : 'follow',
+        component : Follow
       },
       {
         path: "/404",

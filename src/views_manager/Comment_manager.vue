@@ -3,14 +3,12 @@
     <el-card class="box-card" shadow="never">
         <div slot="header" class="clearfix">
             <el-breadcrumb separator-class="el-icon-arrow-right">
-              <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+              <el-breadcrumb-item :to="{ path: '/index_manager' }">首页</el-breadcrumb-item>
               <el-breadcrumb-item>评论列表</el-breadcrumb-item>
             </el-breadcrumb>
-            <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>
         </div>
        <el-table
     :data="data"
-    :default-sort = "{prop: 'gmtCreate', order: 'descending'}"
     border
     stripe
     size="mini"
@@ -165,9 +163,9 @@ export default {
                 cancelButtonText: '取消',
                 type: 'warning'
             }).then(() => {
-            axios.delete("http://localhost:8002/comment/deleteById/" + rows[index].id,{},{headers: {'Authorization': 'Bearer ' + localStorage.getItem("managerToken")}}).then(function(resp){
+            axios.delete("http://localhost:8002/comment/deleteById/" + rows[index].id,{headers: {'Authorization': 'Bearer ' + localStorage.getItem("managerToken")}}).then(function(resp){
                 if(resp.status == 200 && resp.data.code == 200){
-                    this.$message({
+                    _this.$message({
                         type: 'success',
                         message: '删除成功!'
                     });
@@ -186,14 +184,14 @@ export default {
                 });
               });
                 }else{
-                    this.$message({
+                    _this.$message({
                         type: 'error',
                         message: '删除失败'
                     });
                 }
             });
             }).catch(() => {
-                this.$message({
+                _this.$message({
                     type: 'info',
                     message: '已取消删除'
                 });

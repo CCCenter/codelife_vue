@@ -1,5 +1,9 @@
 <template>
     <el-row class="body">
+      <div class="like-bar" style="">
+        <span v-if="isLike != 1" class="el-icon-star-off" @click="like(1)"></span>
+        <span v-if="isLike == 1" class="el-icon-star-on" style="color:#499ef3;" @click="like(0)" ></span>
+      </div>
         <el-col :xs="{span:24}" :sm="{span:24}" :md="{span:24}" :lg="{span:18,offset:3}" class="main">
           <el-row :gutter="20" class="content">
             <el-col :xs="{span:24}" :sm="{span:24}" :md="{span:24}" :lg="{span:18}">
@@ -167,6 +171,7 @@ export default {
         centerDialogVisible: false,
         placeholder:"说点什么...",
         hiddenPage:true,
+        isLike:'',
         member:{
           nickName:'',
           id:'',
@@ -189,8 +194,35 @@ export default {
     };
   }
   ,methods:{
-    test(){
-      alert(1)
+    like(flag){
+      const _this = this;
+      let questionId = _this.$route.params.id;
+      axios.post('http://localhost:8001/relation/followQuestion',{questionId:questionId},{headers: {'Authorization': 'Bearer ' + localStorage.getItem("token")}}).then(function(resp){
+        console.log(resp);
+        if(resp.data.code == 700){
+          _this.$confirm('登录信息过期是否登录?', '提示', {
+              confirmButtonText: '确定',
+              cancelButtonText: '取消',
+              type: 'warning'
+              }).then(() => {
+                  _this.$router.push( {name :"login" ,query: { url : "question/" + id}});
+              }).catch(() => {
+              _this.$message({
+                  type: 'info',
+                  message: '取消登录'
+              });
+          });
+        }
+        if(resp.data.code == 200){
+            _this.$notify({
+              title: '提示',
+              type: 'success',
+              message: resp.data.message,
+              duration : 1000,
+            });
+          _this.isLike = flag;
+        }
+      });
     },
     getQuestion(id){
        this.$router.push("/question/" + id);
@@ -273,6 +305,9 @@ export default {
     this.member.id=localStorage.getItem("id");
     this.member.avatar=localStorage.getItem("avatar");
     let id = _this.$route.params.id;
+    if(!id){
+      _this.$router.push({ name: 'index'})
+    }
     axios.get("http://localhost:8001/question/get/"+id).then(function(resp){
       if(resp.data.data){
         _this.question = resp.data.data;
@@ -299,6 +334,13 @@ export default {
           }
         });
     },500);
+
+    axios.post('http://localhost:8001/relation/findRelation',{questionId:id,type:2,userId:localStorage.getItem("id")},).then(function(resp){
+      console.log(resp.data.code );
+      if(resp.data.code == 200){
+        _this.isLike = 1;
+      }
+    });
   },
 }
 </script>
@@ -315,6 +357,17 @@ export default {
     .content{
       background-color: #fff;
       padding: 25px;
+    }
+    .like-bar{
+      position: fixed;
+      width:40px;
+      font-size:40px;
+      top:50%;left:3%;
+      transform: translate(-50%,-50%);
+      color: #C0C4CC;
+    }
+    .like-bar span:hover {
+      color: rgb(73, 158, 243);
     }
     .hr{
     margin-top: 0;

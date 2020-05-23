@@ -54,6 +54,9 @@
 									<router-link style=" text-decoration: none;" to='/publish'>
 										<el-dropdown-item icon="el-icon-plus">发布问题</el-dropdown-item>
 									</router-link>
+									<router-link style=" text-decoration: none;" to='/follow'>
+										<el-dropdown-item icon="el-icon-star-off">我的关注</el-dropdown-item>
+									</router-link>
 									<span  @click="logout()">
 										<el-dropdown-item icon="el-icon-close">退出</el-dropdown-item>
 									</span>

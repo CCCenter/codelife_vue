@@ -63,6 +63,7 @@ export default {
                     _this.centerDialogVisible = true;
                     return;
                 }else{
+                    console.log(resp);
                     localStorage.setItem("managerToken",resp.data.data.token);
                     axios.post("http://localhost:9000/passport/profile",{},{headers: {'Authorization': 'Bearer ' + resp.data.data.token}}).then(function(resp){
                         console.log(resp);

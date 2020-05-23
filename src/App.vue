@@ -1,5 +1,5 @@
 <template>
-  <router-view key v-if="isRouterAlive"/>
+  <router-view :key="$route.fullPath" v-if="isRouterAlive"/>
 </template>
 
 <script>

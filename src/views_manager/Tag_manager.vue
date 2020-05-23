@@ -11,7 +11,6 @@
         </div>
        <el-table
     :data="data"
-    :default-sort = "{prop: 'gmtCreate', order: 'descending'}"
     border
     stripe
     size="mini"
@@ -144,6 +143,7 @@ export default {
                                 message: '标签添加成功',
                                 type: 'success'
                             });
+                            _this.dialogVisible= false;
                         }else{
                             _this.$notify({
                                 title: '添加失败',
@@ -164,7 +164,7 @@ export default {
                 cancelButtonText: '取消',
                 type: 'warning'
             }).then(() => {
-            axios.delete("http://localhost:8005/tag/deleteById/" + rows[index].id,{},{headers: {'Authorization': 'Bearer ' + localStorage.getItem("managerToken")}}).then(function(resp){
+            axios.delete("http://localhost:8005/tag/deleteById/" + rows[index].id,{headers: {'Authorization': 'Bearer ' + localStorage.getItem("managerToken")}}).then(function(resp){
                 console.log(resp);
                 if(resp.status == 200 && resp.data.code == 200){
                     _this.$message({

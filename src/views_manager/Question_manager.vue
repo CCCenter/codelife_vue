@@ -6,11 +6,9 @@
               <el-breadcrumb-item :to="{ path: '/index_manager' }">首页</el-breadcrumb-item>
               <el-breadcrumb-item>问题列表</el-breadcrumb-item>
             </el-breadcrumb>
-            <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>
         </div>
        <el-table
     :data="questions"
-    :default-sort = "{prop: 'gmtCreate', order: 'descending'}"
     border
     stripe
     size="mini"
@@ -150,14 +148,15 @@ export default {
      methods: {
         deleteRow(index, rows) {
             const _this = this;
-            this.$confirm('此操作将禁用该用户, 是否继续?', '提示', {
+            this.$confirm('此操作将删除改问题, 是否继续?', '提示', {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
                 type: 'warning'
             }).then(() => {
-            axios.delete("http://localhost:8001/question/deleteById/" + rows[index].id,{},{headers: {'Authorization': 'Bearer ' + localStorage.getItem("managerToken")}}).then(function(resp){
+            axios.delete("http://localhost:8001/question/deleteById/" + rows[index].id,{headers: {'Authorization': 'Bearer ' + localStorage.getItem("managerToken")}}).then(function(resp){
+                console.log(resp);
                 if(resp.status == 200 && resp.data.code == 200){
-                    this.$message({
+                    _this.$message({
                         type: 'success',
                         message: '删除成功!'
                     });
@@ -176,14 +175,14 @@ export default {
                 });
               });
                 }else{
-                    this.$message({
+                    _this.$message({
                         type: 'error',
                         message: '删除失败'
                     });
                 }
             });
             }).catch(() => {
-                this.$message({
+                _this.$message({
                     type: 'info',
                     message: '已取消删除'
                 });

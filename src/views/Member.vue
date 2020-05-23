@@ -6,6 +6,7 @@
         <el-col :xs="{span:24}" :sm="{span:24}" :md="{span:24}" :lg="{span:18}">
           <div class="block">
             <el-timeline style="margin-top: 20px">
+              <div v-if="!questions">暂无内容</div>
               <el-timeline-item
                 v-for="question in questions"
                 :key="question.id"
@@ -23,6 +24,7 @@
                 </el-card>
               </el-timeline-item>
               <el-pagination
+                hide-on-single-page
                 background
                 style="margin-bottom:15px"
                 layout="prev, pager, next"
@@ -76,7 +78,12 @@ export default {
     deleteQuestion(questionId) {
       let id = this.$route.params.id;
       const _this = this;
-      axios
+            this.$confirm('此操作将解禁用该用户, 是否继续?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+              axios
         .delete("http://localhost:8001/question/deleteById/" + questionId, {
           headers: { Authorization: "Bearer " + localStorage.getItem("token") }
         })
@@ -103,6 +110,12 @@ export default {
           }
         });
         this.reload();
+            }).catch(() => {
+                _this.$message({
+                    type: 'info',
+                    message: '已取消解禁'
+                });
+            });
     },
     page(value) {
       let id = this.$route.params.id;

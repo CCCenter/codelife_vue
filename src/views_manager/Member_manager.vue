@@ -6,11 +6,9 @@
               <el-breadcrumb-item :to="{ path: '/index_manager' }">首页</el-breadcrumb-item>
               <el-breadcrumb-item>用户列表</el-breadcrumb-item>
             </el-breadcrumb>
-            <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>
         </div>
        <el-table
     :data="data"
-    :default-sort = "{prop: 'gmtCreate', order: 'descending'}"
     border
     stripe
     size="mini"

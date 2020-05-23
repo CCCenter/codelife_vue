@@ -100,9 +100,9 @@ export default {
       goBack() {
         this.$router.go(-1);
       },
-        like(question){
-          const _this = this;
-        axios.post("http://localhost:8001/question/incLikeCount/"+question.id,{},{headers: {'Authorization': 'Bearer ' + localStorage.getItem("token")}}).then(function(resp){
+       like(question){
+         const _this = this;
+        axios.post("http://localhost:8001/question/incLikeCount/"+_this.question.id,{},{headers: {'Authorization': 'Bearer ' + localStorage.getItem("token")}}).then(function(resp){
           if(resp.data.code == 700){
           _this.$confirm('登录信息过期是否登录?', '提示', {
               confirmButtonText: '确定',
@@ -124,32 +124,14 @@ export default {
   },
   created(){
     const _this = this;
-    var keyword = this.$route.query.keyword;
-    var tag = this.$route.query.tag;
-    this.topic = tag;
-    if(keyword){
-      _this.pageUrl='http://localhost:8004/search/list/' + keyword + '/';
-      axios.get("http://localhost:8004/search/list/" + keyword + "/1/6").then(function(resp){
-        console.log(resp.data.data);
+    axios.post('http://localhost:8001/relation/list/0/6',{userId:localStorage.getItem("id"),type:2}).then(function(resp){
+      console.log(resp);
+      
+        _this.topic = "我的收藏";
         _this.questions = resp.data.data.records;
         _this.pageSize = resp.data.data.size;
         _this.total = resp.data.data.total;
-      });
-    }else if (tag){
-      _this.pageUrl='http://localhost:8001/question/list/' + tag + "/";
-      axios.get("http://localhost:8001/question/list/" + tag + "/1/5").then(function(resp){
-        _this.questions = resp.data.data.records;
-        _this.pageSize = resp.data.data.size;
-        _this.total = resp.data.data.total;
-      });
-    }else{
-      _this.pageUrl='http://localhost:8001/question/list/';
-      axios.get("http://localhost:8001/question/list/1/6").then(function(resp){
-          _this.questions = resp.data.data.records;
-          _this.pageSize = resp.data.data.size;
-          _this.total = resp.data.data.total;
-      });
-    }
+    });
     axios.get("http://localhost:8001/question/hotList").then(function(resp){
         _this.hotQuestion = resp.data.data;
     });
